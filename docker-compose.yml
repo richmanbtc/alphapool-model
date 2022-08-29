@@ -3,19 +3,13 @@ services:
   model:
     build: ./docker_images/jupyter
     volumes:
-      - ./.git:/app/.git:ro
-      - ./data:/app/data:ro
-      - ./scripts:/app/scripts:ro
-      - ./src:/app/src:ro
-      - ./tests:/app/tests:ro
-      - ./tmp:/tmp/alphasea-example-model
+      - ./:/app:ro
     working_dir: /app
     environment:
-      ALPHASEA_AGENT_BASE_URL: ${ALPHASEA_AGENT_BASE_URL:-http://host.docker.internal:8070}
-      ALPHASEA_MODEL_ID: ${ALPHASEA_MODEL_ID}
-      ALPHASEA_MODEL_PATH: ${ALPHASEA_MODEL_PATH:-/app/data/example_model_rank.xz}
-      ALPHASEA_LOG_LEVEL: debug
-      ALPHASEA_POSITION_NOISE: ${ALPHASEA_POSITION_NOISE:-0}
+      ALPHAPOOL_DATABASE_URL: 'postgresql://postgres:postgres@host.docker.internal/alphapool'
+      ALPHAPOOL_MODEL_ID: ${ALPHAPOOL_MODEL_ID:-model}
+      ALPHAPOOL_MODEL_PATH: ${ALPHAPOOL_MODEL_PATH:-/app/data/example_model_rank.xz}
+      ALPHAPOOL_LOG_LEVEL: debug
     command: python -m src.main
     user: root
     restart: always

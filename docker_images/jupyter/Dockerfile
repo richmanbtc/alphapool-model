@@ -1,4 +1,4 @@
-FROM jupyter/datascience-notebook:ecabcb829fe0
+FROM jupyter/datascience-notebook:python-3.10.6
 
 USER root
 
@@ -6,7 +6,8 @@ USER root
 
 RUN apt-get update \
   && apt-get install -y \
-    fonts-ipaexfont
+    fonts-ipaexfont \
+    libpq-dev
 
 RUN cd /tmp \
   && wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
@@ -27,12 +28,15 @@ RUN pip install --no-cache-dir \
     cvxpy==1.1.18 \
     lightgbm==3.2.1 \
     schedule==1.1.0 \
-    TA-Lib==0.4.21
+    TA-Lib==0.4.21 \
+    "git+https://github.com/richmanbtc/alphapool.git@v0.0.1#egg=alphapool" \
+    dataset==1.5.2 \
+    psycopg2==2.9.3
 
 # matplotlibで日本語を使えるようにする
-RUN sed -i '/font\.family/d' /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
-RUN echo "font.family: IPAexGothic" >> /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
-RUN rm -rf /home/jovyan/.cache
+#RUN sed -i '/font\.family/d' /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
+#RUN echo "font.family: IPAexGothic" >> /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
+#RUN rm -rf /home/jovyan/.cache
 
 USER jovyan
 

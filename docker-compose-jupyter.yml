@@ -6,7 +6,7 @@ services:
       - "8888:8888"
     environment:
       JUPYTER_ENABLE_LAB: 'yes'
-      ALPHASEA_SYMBOLS: ${ALPHASEA_SYMBOLS:-BTC,ETH,XRP,LINK,ATOM,DOT,SOL,BNB,MATIC,ADA}
+      ALPHAPOOL_SYMBOLS: ${ALPHASEA_SYMBOLS:-BTC,ETH,XRP,LINK,ATOM,DOT,SOL,BNB,MATIC,ADA}
     volumes:
       - ./notebooks:/home/jovyan/notebooks
       - ./data:/home/jovyan/data

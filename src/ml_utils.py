@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-EXECUTION_LAG_SEC = 30 * 60
-EXECUTION_TIME_SEC = 2 * 60 * 60
+EXECUTION_LAG_SEC = 0
+EXECUTION_TIME_SEC = 60 * 60
 EXECUTION_INTERVAL_SEC = 24 * 60 * 60
 
 
