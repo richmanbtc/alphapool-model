@@ -5,4 +5,3 @@ from src.predict import predict_job
 class TestPredictJob(TestCase):
     def test_smoke(self):
         predict_job(dry_run=True)
-
