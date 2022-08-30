@@ -12,7 +12,8 @@ EXECUTION_TIME_SEC = 60 * 60
 EXECUTION_INTERVAL_SEC = 24 * 60 * 60
 
 
-def fetch_ohlcv(symbols: list, with_target=False, interval_sec=60 * 60, logger=None):
+def fetch_ohlcv(symbols: list, with_target=False, interval_sec=60 * 60, logger=None,
+                price_type='index'):
     dfs = []
     for symbol in symbols:
         fetcher = create_data_fetcher(logger=logger)
@@ -21,7 +22,7 @@ def fetch_ohlcv(symbols: list, with_target=False, interval_sec=60 * 60, logger=N
             start_time=None,
             interval_sec=interval_sec,
             market=symbol + '-PERP',
-            price_type='index'
+            price_type=price_type
         )
         df = df.reset_index()
 

@@ -31,7 +31,8 @@ RUN pip install --no-cache-dir \
     TA-Lib==0.4.21 \
     "git+https://github.com/richmanbtc/alphapool.git@v0.0.1#egg=alphapool" \
     dataset==1.5.2 \
-    psycopg2==2.9.3
+    psycopg2==2.9.3 \
+    numba
 
 # matplotlibで日本語を使えるようにする
 #RUN sed -i '/font\.family/d' /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
