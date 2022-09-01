@@ -1,9 +1,11 @@
 import os
 import re
 import joblib
-import numpy as np
 import pandas as pd
 import traceback
+import dataset
+from retry import retry
+from alphapool import Client
 from .logger import create_logger
 from .ml_utils import fetch_ohlcv, normalize_position
 
@@ -15,9 +17,14 @@ if not re.match(r"^[a-z_][a-z0-9_]{3,30}$", model_id):
     raise Exception("model_id must be ^[a-z_][a-z0-9_]{3,30}$")
 
 
-def predict_job(client, dry_run=False):
+@retry(tries=3, delay=3)
+def predict_job(dry_run=False):
     logger = create_logger(log_level)
     model = joblib.load(model_path)
+
+    database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
+    db = dataset.connect(database_url)
+    client = Client(db)
 
     # fetch data
     interval_sec = 60 * 60

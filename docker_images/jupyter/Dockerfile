@@ -32,6 +32,7 @@ RUN pip install --no-cache-dir \
     "git+https://github.com/richmanbtc/alphapool.git@v0.0.4#egg=alphapool" \
     dataset==1.5.2 \
     psycopg2==2.9.3 \
+    retry==0.9.2 \
     numba
 
 # matplotlibで日本語を使えるようにする
