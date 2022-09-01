@@ -42,4 +42,3 @@ RUN pip install --no-cache-dir \
 
 USER jovyan
 
-ADD . /home/jovyan

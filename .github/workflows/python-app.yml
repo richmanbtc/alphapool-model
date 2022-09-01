@@ -1,41 +1,29 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Python application
+name: Publish Docker image
 
 on:
   push:
-    branches:
+    branches-ignore:
       - '**'
-  pull_request:
-    branches: [ master ]
+    tags:
+      - 'v*'
 
 jobs:
-  build:
-
+  push_to_registry:
+    name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 16.x
-    - name: Run tests
-      run: |
-        git clone https://github.com/alphasea-dapp/alphasea.git
-        cd alphasea
-        yarn install
-        npx hardhat compile
-        npx hardhat node --hostname 0.0.0.0 &
-        sleep 5
-        npx hardhat run --network localhost scripts/deploy.js
-        cd ../
+      - uses: actions/checkout@v3
 
-        git clone https://github.com/alphasea-dapp/alphasea-agent.git
-        cd alphasea-agent
-        docker-compose -f docker-compose-dev.yml up -d
-        cd ../
-  
-        echo 'ALPHASEA_MODEL_ID=example_model' > .env
-        docker-compose run --rm model bash scripts/test.sh
+      - uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+      - run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ env.RELEASE_VERSION }}
