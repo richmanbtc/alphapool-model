@@ -13,8 +13,8 @@ model_id = os.getenv("ALPHAPOOL_MODEL_ID")
 model_path = os.getenv("ALPHAPOOL_MODEL_PATH")
 log_level = os.getenv("ALPHAPOOL_LOG_LEVEL")
 
-if not re.match(r"^[a-z_][a-z0-9_]{3,30}$", model_id):
-    raise Exception("model_id must be ^[a-z_][a-z0-9_]{3,30}$")
+# if not re.match(r"^[a-z_][a-z0-9_]{3,30}$", model_id):
+#     raise Exception("model_id must be ^[a-z_][a-z0-9_]{3,30}$")
 
 
 @retry(tries=3, delay=3)

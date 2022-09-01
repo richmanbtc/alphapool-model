@@ -41,7 +41,7 @@ RUN pip install --no-cache-dir \
 #RUN rm -rf /home/jovyan/.cache
 
 ADD . /app
-ENV ALPHAPOOL_MODEL_ID example_model_rank
+ENV ALPHAPOOL_MODEL_ID example-model-rank
 ENV ALPHAPOOL_MODEL_PATH /app/data/example_model_rank.xz
 ENV ALPHAPOOL_LOG_LEVEL debug
 WORKDIR /app
