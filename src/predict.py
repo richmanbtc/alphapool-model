@@ -48,6 +48,7 @@ def predict_job(dry_run=False):
     # predict
     df["position"] = model.predict(df)
     normalize_position(df)
+    logger.debug(df)
 
     # submit
     if dry_run:
@@ -68,6 +69,7 @@ def predict_job(dry_run=False):
 
         for i in range(1, 13):
             t = i / 12.0
+            logger.debug('submit {}'.format(i))
             client.submit(
                 tournament="crypto",
                 model_id=model_id,
