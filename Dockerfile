@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir \
     lightgbm==3.2.1 \
     schedule==1.1.0 \
     TA-Lib==0.4.21 \
-    "git+https://github.com/richmanbtc/alphapool.git@v0.0.4#egg=alphapool" \
+    "git+https://github.com/richmanbtc/alphapool.git@v0.0.6#egg=alphapool" \
     dataset==1.5.2 \
     psycopg2==2.9.3 \
     retry==0.9.2 \
