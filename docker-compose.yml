@@ -4,14 +4,12 @@ services:
     build: .
     volumes:
       - ./:/app:ro
-    working_dir: /app
     environment:
       ALPHAPOOL_DATABASE_URL: 'postgresql://postgres:postgres@host.docker.internal/alphapool'
       ALPHAPOOL_MODEL_ID: ${ALPHAPOOL_MODEL_ID:-model}
       ALPHAPOOL_MODEL_PATH: ${ALPHAPOOL_MODEL_PATH:-/app/data/example_model_rank.xz}
       ALPHAPOOL_LOG_LEVEL: debug
     command: python -m src.main
-    user: root
     restart: always
     logging:
       driver: "json-file"

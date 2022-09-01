@@ -40,5 +40,8 @@ RUN pip install --no-cache-dir \
 #RUN echo "font.family: IPAexGothic" >> /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
 #RUN rm -rf /home/jovyan/.cache
 
-USER jovyan
-
+ENV ALPHAPOOL_MODEL_ID example_model_rank
+ENV ALPHAPOOL_MODEL_PATH /app/data/example_model_rank.xz
+ENV ALPHAPOOL_LOG_LEVEL debug
+WORKDIR /app
+CMD python -m src.main

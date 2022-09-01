@@ -7,6 +7,8 @@ services:
     environment:
       JUPYTER_ENABLE_LAB: 'yes'
       ALPHAPOOL_SYMBOLS: ${ALPHASEA_SYMBOLS:-BTC,ETH,XRP,LINK,ATOM,DOT,SOL,BNB,MATIC,ADA}
+    user: jovyan
+    working_dir: /home/jovyan
     volumes:
       - ./notebooks:/home/jovyan/notebooks
       - ./data:/home/jovyan/data
