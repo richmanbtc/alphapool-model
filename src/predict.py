@@ -56,11 +56,11 @@ def predict_job(dry_run=False):
     else:
         timestamp_idx = df.index.get_level_values("timestamp")
         df_start = df.loc[
-            (max_timestamp - pd.to_timedelta(25, unit="H") <= timestamp_idx)
+            (max_timestamp - pd.to_timedelta(25, unit="H") < timestamp_idx)
             & (timestamp_idx <= max_timestamp - pd.to_timedelta(1, unit="H"))
         ]
         df_end = df.loc[
-            (max_timestamp - pd.to_timedelta(24, unit="H") <= timestamp_idx)
+            (max_timestamp - pd.to_timedelta(24, unit="H") < timestamp_idx)
             & (timestamp_idx <= max_timestamp)
         ]
 
