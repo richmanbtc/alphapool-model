@@ -22,6 +22,8 @@ def predict_job(dry_run=False):
     logger = create_logger(log_level)
     model = joblib.load(model_path)
 
+    price_type = model.price_type if hasattr(model, 'price_type') or 'index'
+
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
     client = Client(db)
@@ -32,7 +34,8 @@ def predict_job(dry_run=False):
     for _ in range(max_retry_count):
         try:
             df = fetch_ohlcv(
-                symbols=model.symbols, logger=logger, interval_sec=interval_sec
+                symbols=model.symbols, logger=logger, interval_sec=interval_sec,
+                price_type=price_type
             )
             max_timestamp = df.index.get_level_values("timestamp").max()
             df = df.loc[
