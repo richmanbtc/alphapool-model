@@ -22,7 +22,7 @@ def predict_job(dry_run=False):
     logger = create_logger(log_level)
     model = joblib.load(model_path)
 
-    price_type = model.price_type if hasattr(model, 'price_type') or 'index'
+    price_type = model.price_type if hasattr(model, 'price_type') else 'index'
 
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
