@@ -33,6 +33,8 @@ RUN pip install --no-cache-dir \
     dataset==1.5.2 \
     psycopg2==2.9.3 \
     retry==0.9.2 \
+    tensorflow \
+    scikeras \
     numba
 
 # matplotlibで日本語を使えるようにする

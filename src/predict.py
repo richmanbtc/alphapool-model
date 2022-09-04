@@ -23,6 +23,7 @@ def predict_job(dry_run=False):
     model = joblib.load(model_path)
 
     price_type = model.price_type if hasattr(model, 'price_type') else 'index'
+    horizon = model.horizon if hasattr(model, 'horizon') else 24
 
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
@@ -59,11 +60,11 @@ def predict_job(dry_run=False):
     else:
         timestamp_idx = df.index.get_level_values("timestamp")
         df_start = df.loc[
-            (max_timestamp - pd.to_timedelta(25, unit="H") < timestamp_idx)
+            (max_timestamp - pd.to_timedelta(horizon + 1, unit="H") < timestamp_idx)
             & (timestamp_idx <= max_timestamp - pd.to_timedelta(1, unit="H"))
         ]
         df_end = df.loc[
-            (max_timestamp - pd.to_timedelta(24, unit="H") < timestamp_idx)
+            (max_timestamp - pd.to_timedelta(horizon, unit="H") < timestamp_idx)
             & (timestamp_idx <= max_timestamp)
         ]
 

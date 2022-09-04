@@ -18,6 +18,7 @@ def fetch_ohlcv(
     interval_sec=60 * 60,
     logger=None,
     price_type="index",
+    horizon=24
 ):
     dfs = []
     for symbol in symbols:
@@ -40,7 +41,7 @@ def fetch_ohlcv(
     df = pd.concat(dfs)
 
     if with_target:
-        df_target = _fetch_targets(symbols=symbols, logger=logger)
+        df_target = _fetch_targets(symbols=symbols, logger=logger, horizon=horizon)
         df = df.reset_index().merge(
             df_target.reset_index(), on=["symbol", "execution_start_at"], how="left"
         )
@@ -50,7 +51,7 @@ def fetch_ohlcv(
     return df
 
 
-def _fetch_targets(symbols: list, logger=None):
+def _fetch_targets(symbols: list, logger=None, horizon=24):
     dfs = []
     for symbol in symbols:
         fetcher = create_data_fetcher(logger=logger)
@@ -75,7 +76,7 @@ def _fetch_targets(symbols: list, logger=None):
             axis=1,
         )
         df["ret"] = (
-            df["twap"].shift(-24 // (EXECUTION_TIME_SEC // (60 * 60))) / df["twap"] - 1
+            df["twap"].shift(-horizon // (EXECUTION_TIME_SEC // (60 * 60))) / df["twap"] - 1
         )
         df = df.drop(columns="twap")
         df = df.dropna()
