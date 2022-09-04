@@ -24,6 +24,8 @@ def predict_job(dry_run=False):
 
     price_type = model.price_type if hasattr(model, 'price_type') else 'index'
     horizon = model.horizon if hasattr(model, 'horizon') else 24
+    logger.info('price_type {}'.format(price_type))
+    logger.info('horizon {}'.format(horizon))
 
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
