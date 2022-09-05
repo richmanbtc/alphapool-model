@@ -35,6 +35,10 @@ RUN pip install --no-cache-dir \
     retry==0.9.2 \
     tensorflow \
     scikeras \
+    keras-tcn \
+    yfinance \
+    pytorch-tabnet \
+    quandl \
     numba
 
 # matplotlibで日本語を使えるようにする
