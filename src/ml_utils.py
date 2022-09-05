@@ -118,10 +118,13 @@ def ewm_finite(x, com, periods):
     return y
 
 
-def _calc_cv_indicies(df, cv=5):
+def _calc_cv_indicies(df, cv=5, causal=False):
     cv_indicies = []
     timestamps = df.index.get_level_values("timestamp").unique().sort_values()
     for i in range(cv):
+        if causal and i == 0:
+            continue
+
         start = i * timestamps.size // cv
         end = (i + 1) * timestamps.size // cv
         val_timestamps = timestamps[start:end]
@@ -134,14 +137,13 @@ def _calc_cv_indicies(df, cv=5):
             val_idx, "execution_start_at"
         ].max() + pd.to_timedelta(EXECUTION_TIME_SEC + EXECUTION_INTERVAL_SEC, unit="S")
 
-        train_idx = df.loc[
-            (
-                df["execution_start_at"]
-                + pd.to_timedelta(EXECUTION_TIME_SEC + EXECUTION_INTERVAL_SEC, unit="S")
-                < val_target_start_at
-            )
-            | (df.index.get_level_values("timestamp") > val_target_end_at)
-        ].index
+        idx = (df["execution_start_at"]
+            + pd.to_timedelta(EXECUTION_TIME_SEC + EXECUTION_INTERVAL_SEC, unit="S")
+            < val_target_start_at
+               )
+        if not causal:
+            idx = idx | (df.index.get_level_values("timestamp") > val_target_end_at)
+        train_idx = df.loc[idx].index
         cv_indicies.append((train_idx, val_idx))
 
     return cv_indicies
@@ -161,8 +163,8 @@ def normalize_position(df):
     df["position"] /= 1e-37 + df2.groupby("timestamp")["position_abs"].transform("sum")
 
 
-def calc_position_cv(model, df, cv=5):
-    cv_indicies = _calc_cv_indicies(df, cv)
+def calc_position_cv(model, df, cv=5, causal=False):
+    cv_indicies = _calc_cv_indicies(df, cv, causal=causal)
     for train_idx, val_idx in cv_indicies:
         model.fit(df.loc[train_idx])
         df.loc[val_idx, "position"] = model.predict(df.loc[val_idx])
