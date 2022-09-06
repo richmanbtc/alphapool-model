@@ -39,6 +39,7 @@ RUN pip install --no-cache-dir \
     yfinance \
     pytorch-tabnet \
     quandl \
+    faiss-cpu==1.7.2 \
     numba
 
 # matplotlibで日本語を使えるようにする
