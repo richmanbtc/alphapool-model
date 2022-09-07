@@ -40,6 +40,7 @@ RUN pip install --no-cache-dir \
     pytorch-tabnet \
     quandl \
     faiss-cpu==1.7.2 \
+    pandas-market-calendars \
     numba
 
 # matplotlibで日本語を使えるようにする
