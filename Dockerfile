@@ -41,6 +41,7 @@ RUN pip install --no-cache-dir \
     quandl \
     faiss-cpu==1.7.2 \
     pandas-market-calendars \
+    xgboost \
     numba
 
 # matplotlibで日本語を使えるようにする
