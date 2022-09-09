@@ -170,6 +170,21 @@ def calc_position_cv(model, df, cv=5, causal=False):
         df.loc[val_idx, "position"] = model.predict(df.loc[val_idx])
 
 
+# fixed version of calc_position_cv
+# Problem:
+# The original calc_position_cv destructively assigns position to df,
+# so if dropna is performed in training, the training data will be dropped,
+# which causes problems.
+# Solution: not destroy input df
+def calc_position_cv2(model, df, cv=5, causal=False):
+    df_output = df.copy()
+    cv_indicies = _calc_cv_indicies(df, cv, causal=causal)
+    for train_idx, val_idx in cv_indicies:
+        model.fit(df.loc[train_idx])
+        df_output.loc[val_idx, "position"] = model.predict(df.loc[val_idx])
+    return df_output
+
+
 def calc_sharpe(x):
     return np.mean(x) / (1e-37 + np.std(x))
 
