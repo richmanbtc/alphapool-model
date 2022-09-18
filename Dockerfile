@@ -42,7 +42,14 @@ RUN pip install --no-cache-dir \
     faiss-cpu==1.7.2 \
     pandas-market-calendars \
     xgboost==1.6.2 \
+    rgf_python \
     numba
+
+RUN git clone --recursive http://github.com/ibayer/fastFM.git /tmp/fastFM \
+    && (cd /tmp/fastFM \
+    && make TARGET=NEHALEM \
+    && python setup.py install) \
+    && rm -rf /tmp/fastFM
 
 # matplotlibで日本語を使えるようにする
 #RUN sed -i '/font\.family/d' /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
