@@ -6,6 +6,7 @@ on:
       - '**'
     tags:
       - 'v*'
+      - 'image-v*'
 
 jobs:
   push_to_registry:
