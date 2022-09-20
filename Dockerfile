@@ -57,9 +57,3 @@ RUN git clone --recursive http://github.com/ibayer/fastFM.git /tmp/fastFM \
 #RUN echo "font.family: IPAexGothic" >> /opt/conda/lib/python3.9/site-packages/matplotlib/mpl-data/matplotlibrc
 #RUN rm -rf /home/jovyan/.cache
 
-ADD . /app
-ENV ALPHAPOOL_MODEL_ID example-model-rank
-ENV ALPHAPOOL_MODEL_PATH /app/data/example_model_rank.xz
-ENV ALPHAPOOL_LOG_LEVEL debug
-WORKDIR /app
-CMD python -m src.main
