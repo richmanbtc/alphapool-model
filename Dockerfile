@@ -43,6 +43,7 @@ RUN pip install --no-cache-dir \
     pandas-market-calendars \
     xgboost==1.6.2 \
     rgf_python \
+    dcor \
     numba
 
 RUN git clone --recursive http://github.com/ibayer/fastFM.git /tmp/fastFM \
