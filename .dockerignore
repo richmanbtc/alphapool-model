@@ -1,3 +1,6 @@
 .env
 .idea
 tmp
+/notebooks/datasets
+/notebooks/lightning_logs
+/notebooks/tb_logs

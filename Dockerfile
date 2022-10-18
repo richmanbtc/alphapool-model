@@ -1,6 +1,8 @@
 FROM alphapool/alphapool-model:image-v0.0.1
 
 RUN pip install --no-cache-dir tardis-dev pandas_ta fastparquet
+RUN pip uninstall -y scikeras \
+    && pip install --no-cache-dir "git+https://github.com/richmanbtc/scikeras.git@feature/sample_weight"
 
 ADD . /app
 ENV ALPHAPOOL_MODEL_ID example-model-rank

@@ -189,6 +189,14 @@ def calc_sharpe(x):
     return np.mean(x) / (1e-37 + np.std(x))
 
 
+def calc_double_sharpe(x, window):
+    agg = pd.Series(x).rolling(window)
+    m = agg.mean()
+    s = agg.std()
+    sharpe = (m / s).dropna()
+    return calc_sharpe(sharpe)
+
+
 def calc_max_dd(x):
     return (x.expanding().max() - x).max()
 
@@ -215,6 +223,7 @@ def visualize_result(df, execution_cost=0.001):
         print("mean {}".format(np.mean(x)))
         print("std {}".format(np.std(x)))
         print("sharpe {}".format(calc_sharpe(x)))
+        print("double sharpe {}".format(calc_double_sharpe(x, 24 * 30)))
         print("max drawdown {}".format(calc_max_dd(x)))
 
     # plot ret
