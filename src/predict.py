@@ -2,6 +2,7 @@ import os
 import re
 import joblib
 import pandas as pd
+import pandas_ta as ta # required to load models using df.ta.xxx
 import traceback
 import dataset
 from retry import retry
