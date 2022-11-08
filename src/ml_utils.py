@@ -18,7 +18,8 @@ def fetch_ohlcv(
     interval_sec=60 * 60,
     logger=None,
     price_type="index",
-    horizon=24
+    horizon=24,
+    # exchange='ftx',
 ):
     dfs = []
     for symbol in symbols:
@@ -75,9 +76,18 @@ def _fetch_targets(symbols: list, logger=None, horizon=24):
             ],
             axis=1,
         )
-        df["ret"] = (
-            df["twap"].shift(-horizon // (EXECUTION_TIME_SEC // (60 * 60))) / df["twap"] - 1
-        )
+
+        def calc_ret(col, h):
+            df[col] = (
+                df["twap"].shift(-h // (EXECUTION_TIME_SEC // (60 * 60))) / df["twap"] - 1
+            )
+
+        if isinstance(horizon, list):
+            for h in horizon:
+                calc_ret('ret_h{}'.format(h), h)
+        else:
+            calc_ret('ret', horizon)
+
         df = df.drop(columns="twap")
         df = df.dropna()
 
@@ -201,13 +211,17 @@ def calc_max_dd(x):
     return (x.expanding().max() - x).max()
 
 
-def visualize_result(df, execution_cost=0.001):
+def visualize_result(df, execution_cost=0.001, horizon=None):
     df = df.copy()
 
     # calc return
     df["ret_pos"] = df["ret"] * df["position"]
-    df["hour"] = df.index.get_level_values("timestamp").hour
-    df["position_prev"] = df.groupby(["hour", "symbol"])["position"].shift(1).fillna(0)
+    if horizon is None:
+        # old logic
+        df["hour"] = df.index.get_level_values("timestamp").hour
+        df["position_prev"] = df.groupby(["hour", "symbol"])["position"].shift(1).fillna(0)
+    else:
+        df["position_prev"] = df.groupby(["symbol"])["position"].shift(horizon).fillna(0)
     df["cost"] = (df["position"] - df["position_prev"]).abs() * execution_cost
     df["ret_pos_cost"] = df["ret_pos"] - df["cost"]
 
@@ -227,6 +241,12 @@ def visualize_result(df, execution_cost=0.001):
         print("max drawdown {}".format(calc_max_dd(x)))
 
     # plot ret
+    for symbol, df_symbol in df.groupby("symbol"):
+        df_symbol = df_symbol.reset_index().set_index("timestamp")
+        df_symbol["ret_pos"].cumsum().plot(label=symbol)
+    plt.legend(bbox_to_anchor=(1.05, 1))
+    plt.title("return without cost by symbol")
+    plt.show()
     for symbol, df_symbol in df.groupby("symbol"):
         df_symbol = df_symbol.reset_index().set_index("timestamp")
         df_symbol["ret_pos_cost"].cumsum().plot(label=symbol)
