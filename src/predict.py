@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import joblib
 import pandas as pd
 import pandas_ta as ta # required to load models using df.ta.xxx
@@ -8,7 +9,8 @@ import dataset
 from retry import retry
 from alphapool import Client
 from .logger import create_logger
-from .ml_utils import fetch_ohlcv, normalize_position
+from .ml_utils import normalize_position
+from .data_fetcher import DataFetcher
 
 model_id = os.getenv("ALPHAPOOL_MODEL_ID")
 model_path = os.getenv("ALPHAPOOL_MODEL_PATH")
@@ -23,10 +25,8 @@ def predict_job(dry_run=False):
     logger = create_logger(log_level)
     model = joblib.load(model_path)
 
-    price_type = model.price_type if hasattr(model, 'price_type') else 'index'
-    horizon = model.horizon if hasattr(model, 'horizon') else 24
-    logger.info('price_type {}'.format(price_type))
-    logger.info('horizon {}'.format(horizon))
+    provider_configs = model.provider_configs
+    logger.info('provider_configs {}'.format(provider_configs))
 
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
@@ -37,15 +37,13 @@ def predict_job(dry_run=False):
     max_retry_count = 5
     for _ in range(max_retry_count):
         try:
-            df = fetch_ohlcv(
-                symbols=model.symbols, logger=logger, interval_sec=interval_sec,
-                price_type=price_type
+            max_timestamp = (int(time.time()) // interval_sec) * interval_sec - interval_sec
+            dfs = DataFetcher().fetch(
+                provider_configs=provider_configs,
+                min_timestamp=int(max_timestamp - model.max_data_sec),
             )
-            max_timestamp = df.index.get_level_values("timestamp").max()
-            df = df.loc[
-                max_timestamp - pd.to_timedelta(model.max_data_sec, unit="S")
-                <= df.index.get_level_values("timestamp")
-            ]
+            df = model.merge_data(dfs)
+            max_timestamp = pd.to_datetime(max_timestamp, unit='s', utc=True)
             break
         except Exception as e:
             logger.error(e)
