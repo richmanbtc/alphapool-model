@@ -6,16 +6,20 @@ from .data_providers.bigquery import fetch as bigquery_fetch
 
 
 class DataFetcher:
-    def __init__(self, memory=None):
+    def __init__(self, memory=None, sequential=False):
         self.memory = Memory(None, verbose=0) if memory is None else memory
+        self.sequential = sequential
 
     def fetch(self, provider_configs, min_timestamp):
         def _do_fetch2(c):
             return self.memory.cache(_do_fetch)(c, min_timestamp)
 
-        dfs = Parallel(n_jobs=len(provider_configs), backend='threading')(
-            delayed(_do_fetch2)(c) for c in provider_configs
-        )
+        if self.sequential:
+            dfs = map(_do_fetch2, provider_configs)
+        else:
+            dfs = Parallel(n_jobs=len(provider_configs), backend='threading')(
+                delayed(_do_fetch2)(c) for c in provider_configs
+            )
 
         return dfs
 

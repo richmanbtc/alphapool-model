@@ -34,21 +34,13 @@ def predict_job(dry_run=False):
 
     # fetch data
     interval_sec = 60 * 60
-    max_retry_count = 5
-    for _ in range(max_retry_count):
-        try:
-            max_timestamp = (int(time.time()) // interval_sec) * interval_sec - interval_sec
-            dfs = DataFetcher().fetch(
-                provider_configs=provider_configs,
-                min_timestamp=int(max_timestamp - model.max_data_sec),
-            )
-            df = model.merge_data(dfs)
-            max_timestamp = pd.to_datetime(max_timestamp, unit='s', utc=True)
-            break
-        except Exception as e:
-            logger.error(e)
-            logger.error(traceback.format_exc())
-            logger.info("fetch_ohlcv error. retrying")
+    max_timestamp = (int(time.time()) // interval_sec) * interval_sec - interval_sec
+    dfs = DataFetcher(sequential=True).fetch(
+        provider_configs=provider_configs,
+        min_timestamp=int(max_timestamp - model.max_data_sec),
+    )
+    df = model.merge_data(dfs)
+    max_timestamp = pd.to_datetime(max_timestamp, unit='s', utc=True)
 
     # predict
     df["position"] = model.predict(df)
