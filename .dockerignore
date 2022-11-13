@@ -2,5 +2,8 @@
 .idea
 tmp
 /notebooks/datasets
+/notebooks/tardis_datasets
 /notebooks/lightning_logs
 /notebooks/tb_logs
+/notebooks/df_*
+/data/df_*
