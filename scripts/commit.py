@@ -78,9 +78,15 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
                 'dir': repoDir,
             },
             {
+                'name': 'gcr.io/cloud-builders/gcloud',
+                'entrypoint': 'bash',
+                'args': ['-c', 'echo ALPHAPOOL_DATASET={} >> .env'.format(os.getenv('ALPHAPOOL_DATASET'))],
+                'dir': repoDir,
+            },
+            {
                 'name': 'gcr.io/$PROJECT_ID/docker-compose',
                 'args': [
-                    '-f', 'docker-compose-jupyter.yml',
+                    '-f', 'docker-compose-jupyter-commit.yml',
                     'run',
                     'notebook',
                     'jupyter',
@@ -90,7 +96,7 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
                     '--ExecutePreprocessor.timeout=-1',
                     dest_path,
                 ],
-                'dir': repoDir
+                'dir': repoDir,
             },
             {
                 'name': 'node',
@@ -166,6 +172,7 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
             yaml.dump(config, f)
 
         shutil.copyfile(src_path, '{}/src.ipynb'.format(dir))
+        shutil.copyfile(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'), '{}/google_credentials.json'.format(dir))
 
         options = [
             'gcloud',
