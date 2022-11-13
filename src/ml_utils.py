@@ -238,7 +238,9 @@ def visualize_result(df, execution_cost=0.001, horizon=None):
         print("std {}".format(np.std(x)))
         print("sharpe {}".format(calc_sharpe(x)))
         print("double sharpe {}".format(calc_double_sharpe(x, 24 * 30)))
-        print("max drawdown {}".format(calc_max_dd(x)))
+        print("max drawdown {}".format(calc_max_dd(x.cumsum())))
+        print("min {}".format(np.min(x)))
+        print("min sharpe {}".format(-np.mean(x) / np.min(x)))
 
     # plot ret
     for symbol, df_symbol in df.groupby("symbol"):
@@ -268,4 +270,14 @@ def visualize_result(df, execution_cost=0.001, horizon=None):
     df.groupby("timestamp")["cost"].sum().cumsum().plot(label="cost")
     plt.legend(bbox_to_anchor=(1.05, 1))
     plt.title("total return")
+    plt.show()
+
+    # plot symbol corr
+    df_ret = df.reset_index().pivot(
+        index='timestamp',
+        columns='symbol',
+        values='ret'
+    ).fillna(0)
+    df_ret.corrwith(df.groupby("timestamp")["ret_pos"].sum()).plot.bar()
+    plt.title("total return (without cost) corr with symbol")
     plt.show()
