@@ -15,15 +15,18 @@ from .data_fetcher import DataFetcher
 model_id = os.getenv("ALPHAPOOL_MODEL_ID")
 model_path = os.getenv("ALPHAPOOL_MODEL_PATH")
 log_level = os.getenv("ALPHAPOOL_LOG_LEVEL")
+logger = create_logger(log_level)
 
 # if not re.match(r"^[a-z_][a-z0-9_]{3,30}$", model_id):
 #     raise Exception("model_id must be ^[a-z_][a-z0-9_]{3,30}$")
 
 
-@retry(tries=3, delay=3)
+@retry(tries=3, delay=3, logger=logger)
 def predict_job(dry_run=False):
-    logger = create_logger(log_level)
     model = joblib.load(model_path)
+
+    horizon = model.horizon if hasattr(model, 'horizon') else 24
+    logger.info('horizon {}'.format(horizon))
 
     provider_configs = model.provider_configs
     logger.info('provider_configs {}'.format(provider_configs))
