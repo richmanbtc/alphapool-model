@@ -7,10 +7,25 @@ services:
     environment:
       JUPYTER_ENABLE_LAB: 'yes'
       ALPHAPOOL_SYMBOLS: ${ALPHASEA_SYMBOLS:-BTC,ETH,XRP,LINK,ATOM,DOT,SOL,BNB,MATIC,ADA}
+      TARDIS_DEV_KEY: ${TARDIS_DEV_KEY}
+      QUANDL_API_KEY: ${QUANDL_API_KEY}
+      GOOGLE_APPLICATION_CREDENTIALS: /google_credentials.json
+      ALPHAPOOL_DATASET: ${ALPHAPOOL_DATASET}
     user: jovyan
     working_dir: /home/jovyan
     volumes:
       - ./notebooks:/home/jovyan/notebooks
       - ./data:/home/jovyan/data
       - ./src:/home/jovyan/src:ro
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/google_credentials.json:ro
     command: start-notebook.sh --NotebookApp.token=''
+
+  tensorboard:
+    build: .
+    ports:
+      - "6006:6006"
+    user: jovyan
+    working_dir: /home/jovyan
+    volumes:
+      - ./notebooks/tb_logs:/home/jovyan/notebooks/tb_logs:ro
+    command: tensorboard --logdir /home/jovyan/notebooks/tb_logs --bind_all

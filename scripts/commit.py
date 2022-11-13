@@ -1,8 +1,8 @@
+import argparse
 import datetime
 import os
 import shutil
 import subprocess
-import sys
 import tempfile
 import yaml
 from dotenv import load_dotenv
@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, machine=None, deploy_key=None):
+def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, machine=None, deploy_key=None, prod=False):
     with tempfile.TemporaryDirectory() as dir:
         config_path = dir + '/cloudbuild.yaml'
 
@@ -23,6 +23,7 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
             datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
             '' if dest_suffix is None else dest_suffix
         )
+        model_path = src_path.replace('.ipynb', '.xz').replace('notebooks/', 'data/')
 
         print('[{}]({})'.format(dest_path.replace('notebooks/', ''), dest_path.replace('notebooks/', '')))
 
@@ -35,100 +36,123 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
             'path': '/root/.ssh'
         }
 
-        config = {
-            'steps': [
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'entrypoint': 'bash',
-                    'args': [
-                        '-c',
-                        ' && '.join([
-                            'echo "$$DEPLOY_KEY" > /root/.ssh/id_rsa',
-                            'chmod 400 /root/.ssh/id_rsa',
-                            'echo "{}" > /root/.ssh/known_hosts'.format(known_hosts),
-                        ])
-                    ],
-                    'volumes': [ssh_volume],
-                    'env': [
-                        'DEPLOY_KEY=$_DEPLOY_KEY'
-                    ]
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': [ 'config', '--global', 'user.email', "you@example.com", ],
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': [ 'config', '--global', 'user.name', "Your Name", ],
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': [ 'clone', '--recursive', repoUrl, repoDir, ],
-                    'volumes': [ssh_volume],
-                },
+        steps = [
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'entrypoint': 'bash',
+                'args': [
+                    '-c',
+                    ' && '.join([
+                        'echo "$$DEPLOY_KEY" > /root/.ssh/id_rsa',
+                        'chmod 400 /root/.ssh/id_rsa',
+                        'echo "{}" > /root/.ssh/known_hosts'.format(known_hosts),
+                    ])
+                ],
+                'volumes': [ssh_volume],
+                'env': [
+                    'DEPLOY_KEY=$_DEPLOY_KEY'
+                ]
+            },
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': [ 'config', '--global', 'user.email', "you@example.com", ],
+            },
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': [ 'config', '--global', 'user.name', "Your Name", ],
+            },
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': [ 'clone', '--recursive', repoUrl, repoDir, ],
+                'volumes': [ssh_volume],
+            },
+            {
+                'name': 'gcr.io/cloud-builders/gcloud',
+                'entrypoint': 'bash',
+                'args': [ '-c', 'mkdir -p {}/{} && mv src.ipynb "{}/{}"'.format(repoDir, dest_dir, repoDir, dest_path), ],
+            },
+            {
+                'name': 'gcr.io/cloud-builders/gcloud',
+                'entrypoint': 'bash',
+                'args': ['-c', 'chmod -R a+rw data notebooks'],
+                'dir': repoDir,
+            },
+            {
+                'name': 'gcr.io/$PROJECT_ID/docker-compose',
+                'args': [
+                    '-f', 'docker-compose-jupyter.yml',
+                    'run',
+                    'notebook',
+                    'jupyter',
+                    'nbconvert',
+                    '--execute',
+                    '--inplace',
+                    '--ExecutePreprocessor.timeout=-1',
+                    dest_path,
+                ],
+                'dir': repoDir
+            },
+            {
+                'name': 'node',
+                'entrypoint': 'bash',
+                'args': [
+                    '-c',
+                    'npm install -g optipng-bin && cp {} /tmp/a.ipynb && (cat /tmp/a.ipynb | node scripts/optipng_ipynb.js > {})'.format(dest_path, dest_path)
+                ],
+                'dir': repoDir
+            },
+        ]
+
+        if prod:
+            steps += [
                 {
                     'name': 'gcr.io/cloud-builders/gcloud',
                     'entrypoint': 'bash',
-                    'args': [ '-c', 'mkdir -p {}/{} && mv src.ipynb "{}/{}"'.format(repoDir, dest_dir, repoDir, dest_path), ],
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/gcloud',
-                    'entrypoint': 'bash',
-                    'args': ['-c', 'chmod -R a+rw data notebooks'],
+                    'args': ['-c', 'mv {} {}'.format(dest_path, src_path)],
                     'dir': repoDir,
                 },
                 {
-                    'name': 'gcr.io/$PROJECT_ID/docker-compose',
-                    'args': [
-                        '-f', 'docker-compose-jupyter.yml',
-                        'run',
-                        'notebook',
-                        'jupyter',
-                        'nbconvert',
-                        '--execute',
-                        '--inplace',
-                        '--ExecutePreprocessor.timeout=-1',
-                        dest_path,
-                    ],
+                    'name': 'gcr.io/cloud-builders/git',
+                    'args': [ 'add', src_path, model_path ],
                     'dir': repoDir
                 },
-                {
-                    'name': 'node',
-                    'entrypoint': 'bash',
-                    'args': [
-                        '-c',
-                        'npm install -g optipng-bin && cp {} /tmp/a.ipynb && (cat /tmp/a.ipynb | node scripts/optipng_ipynb.js > {})'.format(dest_path, dest_path)
-                    ],
-                    'dir': repoDir
-                },
+            ]
+        else:
+            steps += [
                 {
                     'name': 'gcr.io/cloud-builders/git',
                     'args': [ 'add', dest_path ],
                     'dir': repoDir
                 },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': [ 'commit', '-m', "'{}'".format(commit_message) ],
-                    'dir': repoDir
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': ['stash'],
-                    'dir': repoDir
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': [ 'pull', '--rebase', 'origin', 'master' ],
-                    'dir': repoDir,
-                    'volumes': [ssh_volume],
-                },
-                {
-                    'name': 'gcr.io/cloud-builders/git',
-                    'args': [ 'push', 'origin', 'master' ],
-                    'dir': repoDir,
-                    'volumes': [ssh_volume],
-                },
-            ],
+            ]
+
+        steps += [
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': [ 'commit', '-m', "'{}'".format(commit_message) ],
+                'dir': repoDir
+            },
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': ['stash'],
+                'dir': repoDir
+            },
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': [ 'pull', '--rebase', 'origin', 'master' ],
+                'dir': repoDir,
+                'volumes': [ssh_volume],
+            },
+            {
+                'name': 'gcr.io/cloud-builders/git',
+                'args': [ 'push', 'origin', 'master' ],
+                'dir': repoDir,
+                'volumes': [ssh_volume],
+            },
+        ]
+
+        config = {
+            'steps': steps,
             # 'options': {
             #     'pool': {
             #         'name': pool,
@@ -143,7 +167,7 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
 
         shutil.copyfile(src_path, '{}/src.ipynb'.format(dir))
 
-        res = subprocess.run([
+        options = [
             'gcloud',
             'builds',
             'submit',
@@ -151,18 +175,29 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
             '--async',
             '--project={}'.format(project_id),
             '--substitutions=_DEPLOY_KEY={}'.format(deploy_key),
-            # '' if machine is None else '--machine-type={}'.format(machine),
-            dir,
-        ], stdout=subprocess.PIPE)
+        ]
+        if machine is not None:
+            options += ['--machine-type={}'.format(machine)]
+        options += [dir]
+
+        res = subprocess.run(options, stdout=subprocess.PIPE)
 
     print(res.stdout.decode('utf-8'))
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument('src')
+parser.add_argument('-p', '--prod', action='store_true')
+
+args = parser.parse_args()
+print(args)
 
 run_commit(
-    src_path=sys.argv[1],
+    src_path=args.src,
+    prod=args.prod,
     dest_suffix=None,
     project_id=os.getenv('GC_PROJECT_ID'),
     pool=None,
-    machine=None,
+    machine='e2-highcpu-32',
     deploy_key=os.getenv('DEPLOY_KEY')
 )
