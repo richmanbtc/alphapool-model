@@ -15,7 +15,7 @@ class DataFetcher:
             return self.memory.cache(_do_fetch)(c, min_timestamp)
 
         if self.sequential:
-            dfs = map(_do_fetch2, provider_configs)
+            dfs = list(map(_do_fetch2, provider_configs))
         else:
             dfs = Parallel(n_jobs=len(provider_configs), backend='threading')(
                 delayed(_do_fetch2)(c) for c in provider_configs
