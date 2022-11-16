@@ -8,7 +8,7 @@ def fetch(options=None, min_timestamp=None):
     client = bigquery.Client(project=project_id)
 
     conds = []
-    if min_timestamp is not None:
+    if min_timestamp is not None and not options.get('ignore_min_timestamp', False):
         conds.append('timestamp >= {}'.format(min_timestamp))
     if options.get('symbols') is not None:
         conds.append('symbol IN ({})'.format(','.join(map(_quote_str, options.get('symbols')))))

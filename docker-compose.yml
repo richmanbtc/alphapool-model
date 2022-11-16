@@ -4,11 +4,20 @@ services:
     build: .
     volumes:
       - ./:/app:ro
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./LICENSE}:/google_credentials.json:ro
     environment:
       ALPHAPOOL_DATABASE_URL: 'postgresql://postgres:postgres@host.docker.internal/alphapool'
       ALPHAPOOL_MODEL_ID: ${ALPHAPOOL_MODEL_ID:-model}
       ALPHAPOOL_MODEL_PATH: ${ALPHAPOOL_MODEL_PATH:-/app/data/example_model_rank.xz}
       ALPHAPOOL_LOG_LEVEL: debug
+      GOOGLE_APPLICATION_CREDENTIALS: /google_credentials.json
+      ALPHAPOOL_DATASET: ${ALPHAPOOL_DATASET}
+      ALPHAPOOL_DEX_PRIVATE_KEY: ${ALPHAPOOL_DEX_PRIVATE_KEY}
+      ALPHAPOOL_DEX_RPC_URL: ${ALPHAPOOL_DEX_RPC_URL}
+      ALPHAPOOL_DEX_ERC20_ABI: ${ALPHAPOOL_DEX_ERC20_ABI}
+      ALPHAPOOL_DEX_UNISWAP_V2_PAIR_ABI: ${ALPHAPOOL_DEX_UNISWAP_V2_PAIR_ABI}
+      ALPHAPOOL_DEX_UNISWAP_V2_ROUTER2_ABI: ${ALPHAPOOL_DEX_UNISWAP_V2_ROUTER2_ABI}
+      ALPHAPOOL_DRY_RUN: ${ALPHAPOOL_DRY_RUN}
     command: python -m src.main
     restart: always
     logging:
