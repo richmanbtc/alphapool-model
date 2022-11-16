@@ -1,12 +1,8 @@
-import json
 import os
-import re
 import time
 import joblib
-import numpy as np
 import pandas as pd
 import pandas_ta as ta # required to load models using df.ta.xxx
-import traceback
 from functools import lru_cache
 import requests
 from retry import retry
@@ -16,7 +12,7 @@ from web3.middleware import construct_sign_and_send_raw_middleware
 from .logger import create_logger
 from .data_fetcher import DataFetcher
 
-model_id = os.getenv("ALPHAPOOL_MODEL_ID")
+
 model_path = os.getenv("ALPHAPOOL_MODEL_PATH")
 log_level = os.getenv("ALPHAPOOL_LOG_LEVEL")
 dry_run = int(os.getenv("ALPHAPOOL_DRY_RUN", "0")) > 0
@@ -24,6 +20,7 @@ logger = create_logger(log_level)
 
 weth_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 router2_address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+
 
 @retry(tries=3, delay=3, logger=logger)
 def predict_job(dry_run=False):
