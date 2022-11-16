@@ -13,6 +13,7 @@ from .logger import create_logger
 from .data_fetcher import DataFetcher
 
 
+retry_delay = int(os.getenv("ALPHAPOOL_RETRY_DELAY", '3'))
 model_path = os.getenv("ALPHAPOOL_MODEL_PATH")
 log_level = os.getenv("ALPHAPOOL_LOG_LEVEL")
 dry_run = int(os.getenv("ALPHAPOOL_DRY_RUN", "0")) > 0
@@ -22,7 +23,7 @@ weth_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 router2_address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 
 
-@retry(tries=3, delay=3, logger=logger)
+@retry(tries=3, delay=retry_delay, logger=logger)
 def predict_job(dry_run=False):
     logger.info('dry_run {}'.format(dry_run))
 
