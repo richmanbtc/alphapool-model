@@ -81,7 +81,7 @@ def predict_job(dry_run=False):
         logger.info('symbol {} pos_start {} pos_end {}'.format(symbol, pos_start, pos_end))
 
         # trade if weight changed (larger than eps) or weight zero
-        if abs(pos_start - pos_end) < eps and abs(pos_end) > 0:
+        if abs(pos_end - pos_start) < eps and abs(pos_end) > 0:
             logger.info('position change too small skip')
             continue
 
@@ -93,6 +93,10 @@ def predict_job(dry_run=False):
 
         if abs(amount) < total_eth * 10 ** 18 / price * eps:
             logger.info('amount too small skip')
+            continue
+
+        if (pos_end - pos_start) * amount <= 0 and abs(pos_end) > 0:
+            logger.info('amount direction different')
             continue
 
         logger.info('symbol {} amount {}'.format(symbol, amount))
@@ -191,10 +195,11 @@ def execute_order(symbol, amount, dry_run):
         opposite_am_with_slippage = int(opposite_am * (1 + slippage))
         logger.info('opposite_am {} opposite_am_with_slippage {}'.format(opposite_am, opposite_am_with_slippage))
 
+        ensure_approve_max(weth_address, dry_run)
         call = router.functions.swapTokensForExactTokens(
             abs(amount),
             opposite_am_with_slippage,
-            [weth_address, token_address],
+            [Web3.toChecksumAddress(weth_address), token_address],
             w3.eth.default_account,
             deadline,
         )
@@ -203,10 +208,11 @@ def execute_order(symbol, amount, dry_run):
         opposite_am_with_slippage = int(opposite_am * (1 - slippage))
         logger.info('opposite_am {} opposite_am_with_slippage {}'.format(opposite_am, opposite_am_with_slippage))
 
+        ensure_approve_max(token_address, dry_run)
         call = router.functions.swapExactTokensForTokens(
             abs(amount),
             opposite_am_with_slippage,
-            [token_address, weth_address],
+            [token_address, Web3.toChecksumAddress(weth_address)],
             w3.eth.default_account,
             deadline,
         )
@@ -219,6 +225,32 @@ def execute_order(symbol, amount, dry_run):
     logger.info('order submitted')
     w3.eth.wait_for_transaction_receipt(tx_hash)
     logger.info('order succeeded')
+
+
+def ensure_approve_max(token, dry_run):
+    max_uint256 = (1 << 256) - 1
+
+    w3 = get_w3()
+    contract = w3.eth.contract(
+        address=Web3.toChecksumAddress(token),
+        abi=erc20_abi()
+    )
+    allowance = contract.functions.allowance(w3.eth.default_account, router2_address).call()
+    logger.info('token {} allowance {}'.format(token, allowance))
+    if allowance == max_uint256:
+        logger.info('already approved skip')
+        return
+
+    call = contract.functions.approve(router2_address, max_uint256)
+
+    if dry_run:
+        logger.info('approve dry run skip')
+        return
+
+    tx_hash = call.transact({})
+    logger.info('approve submitted')
+    w3.eth.wait_for_transaction_receipt(tx_hash)
+    logger.info('approve succeeded')
 
 
 def get_w3():
