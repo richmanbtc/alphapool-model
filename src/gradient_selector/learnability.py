@@ -501,7 +501,7 @@ class Solver(nn.Module):
                         continue
                 h_complete += h
                 self.it += 1
-                if torch.isnan(h):
+                if np.isnan(h):
                     raise constants.NanError(
                         'Loss is nan, something may be misconfigured')
                 if self.it % self.accum_steps == 0:

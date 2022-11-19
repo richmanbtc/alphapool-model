@@ -56,8 +56,9 @@ def get_optim_f_stop(maxiter, maxtime, dftol_stop, freltol_stop,
         total_t[-1] += t
         g = f0.x.grad.clone().cpu().detach()
         df = g.abs().max().numpy().squeeze()
-        v = v0.clone().cpu().detach()
-        f = v.numpy().squeeze()
+        # v = v0.clone().cpu().detach()
+        # f = v.numpy().squeeze()
+        f = v0
 
         if it >= maxiter:
             flag_stop = True

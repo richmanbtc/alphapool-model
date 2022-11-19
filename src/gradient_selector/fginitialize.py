@@ -429,9 +429,9 @@ class PrepareData(Dataset):
         else:
             Xc = X - Xmn
 
-        sv1 = scipy.sparse.linalg.svds(Xc / (
+        sv1 = scipy.sparse.linalg.svds((Xc / (
             torch.sqrt(torch.prod(torch.as_tensor(y.size(), dtype=torch.get_default_dtype())))
-            if not scipy.sparse.issparse(X) else y.numpy().size),
+            if not scipy.sparse.issparse(X) else y.numpy().size)).numpy(),
                                        k=1,
                                        which='LM',
                                        return_singular_vectors=False)
