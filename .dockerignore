@@ -6,4 +6,5 @@ tmp
 /notebooks/lightning_logs
 /notebooks/tb_logs
 /notebooks/df_*
+/notebooks/Kraken_OHLCVT
 /data/df_*
