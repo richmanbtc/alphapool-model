@@ -17,6 +17,7 @@ services:
       - ./notebooks:/home/jovyan/notebooks
       - ./data:/home/jovyan/data
       - ./src:/home/jovyan/src:ro
+      - ./scripts:/home/jovyan/scripts:ro
       - ${GOOGLE_APPLICATION_CREDENTIALS:-./LICENSE}:/google_credentials.json:ro
     command: start-notebook.sh --NotebookApp.token=''
 
