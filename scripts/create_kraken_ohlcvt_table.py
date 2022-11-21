@@ -43,6 +43,11 @@ def get_kraken_data(symbol):
 
 
 symbols = 'BTC,ETH,XRP,LINK,ATOM,DOT,SOL,BNB,MATIC,ADA'.split(',')
+symbols += 'DOGE,SFP,DYDX,AXS,CHZ,TRX,MASK,ETC,LTC,1000SHIB,C98,SAND,SUSHI,NEAR,FIL'.split(',')
+symbols += 'SFP,DYDX,AXS,TRX,MASK,ETC,LTC,1000SHIB,C98,SAND,SUSHI,NEAR,FIL'.split(',')
+symbols += ['ALGO', 'AVAX', 'BCH', 'APT']
+symbols = list(set(symbols))
+
 dfs = list(map(get_kraken_data, symbols))
 df = pd.concat(dfs)
 df = df.sort_index()
