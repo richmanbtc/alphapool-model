@@ -1,11 +1,11 @@
-name: Publish Docker image
+name: Publish Docker base image
 
 on:
   push:
     branches-ignore:
       - '**'
     tags:
-      - 'v*'
+      - 'image-v*'
 
 jobs:
   push_to_registry:
@@ -24,6 +24,7 @@ jobs:
 
       - uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: .
+          context: images/base
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ env.RELEASE_VERSION }}
+          file: images/base/Dockerfile
