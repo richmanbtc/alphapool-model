@@ -25,7 +25,10 @@ def run_commit(src_path=None, dest_suffix=None, project_id=None, pool=None, mach
         )
         model_path = src_path.replace('.ipynb', '.xz').replace('notebooks/', 'data/')
 
-        print('[{}]({})'.format(dest_path.replace('notebooks/', ''), dest_path.replace('notebooks/', '')))
+        link_tag = '[{}]({})'.format(dest_path.replace('notebooks/', ''), dest_path.replace('notebooks/', ''))
+        print(link_tag)
+        with open("tmp/commit.txt", "a") as f:
+            f.write('- {}\n'.format(link_tag))
 
         commit_message = 'build {}'.format(dest_path)
 
