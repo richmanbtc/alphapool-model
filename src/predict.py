@@ -43,7 +43,7 @@ def predict_job(dry_run=False):
         min_timestamp=int(max_timestamp - model.max_data_sec),
     )
     df = model.merge_data(dfs)
-    max_timestamp = pd.to_datetime(max_timestamp, unit='s', utc=True)
+    max_timestamp = df.index.get_level_values("timestamp").max()
 
     # predict
     df["position"] = model.predict(df)
