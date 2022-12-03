@@ -9,7 +9,6 @@ import dataset
 from retry import retry
 from alphapool import Client
 from .logger import create_logger
-from .ml_utils import normalize_position
 from .data_fetcher import DataFetcher
 
 model_id = os.getenv("ALPHAPOOL_MODEL_ID")
@@ -47,7 +46,6 @@ def predict_job(dry_run=False):
 
     # predict
     df["position"] = model.predict(df)
-    normalize_position(df)
     logger.debug(df)
 
     # submit
