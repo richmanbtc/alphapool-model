@@ -30,6 +30,9 @@ def predict_job(dry_run=False):
     provider_configs = model.provider_configs
     logger.info('provider_configs {}'.format(provider_configs))
 
+    exchange = model.exchange if hasattr(model, 'exchange') else None
+    logger.info('exchange {}'.format(exchange))
+
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
     client = Client(db)
@@ -45,13 +48,20 @@ def predict_job(dry_run=False):
     max_timestamp = df.index.get_level_values("timestamp").max()
 
     # predict
-    df["position"] = model.predict(df)
+    predict_result = model.predict(df)
+    if len(predict_result.shape) == 1:
+        df["position"] = predict_result
+    else:
+        for col in predict_result.columns:
+            df[col] = predict_result[col]
     logger.debug(df)
 
     # submit
     if dry_run:
         logger.info("dry run submit {}".format(df))
-    else:
+        return
+
+    if len(predict_result.shape) == 1:
         timestamp_idx = df.index.get_level_values("timestamp")
         df_start = df.loc[
             (max_timestamp - pd.to_timedelta(horizon + 1, unit="H") < timestamp_idx)
@@ -69,8 +79,8 @@ def predict_job(dry_run=False):
             t = i / 12.0
             logger.debug('submit {}'.format(i))
             client.submit(
-                tournament="crypto",
                 model_id=model_id,
+                exchange=exchange,
                 timestamp=int(
                     (
                         max_timestamp
@@ -79,4 +89,40 @@ def predict_job(dry_run=False):
                     ).timestamp()
                 ),
                 positions=(df_start * (1.0 - t) + df_end * t).to_dict(),
+            )
+    else:
+        orders = {}
+
+        for symbol, df_symbol in df.groupby('symbol'):
+            last_row = df_symbol.iloc[-1]
+            order_list = []
+            if last_row['buy_amount'] > 0:
+                order_list.append({
+                    "price": last_row['buy_price'],
+                    "amount": last_row['buy_amount'],
+                    "duration": 60 * 60,
+                    "isBuy": True,
+                })
+            if last_row['sell_amount'] > 0:
+                order_list.append({
+                    "price": last_row['sell_price'],
+                    "amount": last_row['sell_amount'],
+                    "duration": 60 * 60,
+                    "isBuy": False,
+                })
+            if len(order_list) > 0:
+                orders[symbol] = order_list
+
+        if len(orders) > 0:
+            client.submit(
+                model_id=model_id,
+                exchange=exchange,
+                timestamp=int(
+                    (
+                            max_timestamp
+                            + pd.to_timedelta(1, unit="H")
+                            + pd.to_timedelta(5, unit="minutes")
+                    ).timestamp()
+                ),
+                orders=orders,
             )
