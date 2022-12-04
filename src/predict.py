@@ -46,6 +46,7 @@ def predict_job(dry_run=False):
     )
     df = model.merge_data(dfs)
     max_timestamp = df.index.get_level_values("timestamp").max()
+    logger.info('max_timestamp {}'.format(max_timestamp))
 
     # predict
     predict_result = model.predict(df)
