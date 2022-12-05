@@ -102,14 +102,14 @@ def predict_job(dry_run=False):
                     "price": last_row['buy_price'],
                     "amount": last_row['buy_amount'],
                     "duration": 60 * 60,
-                    "isBuy": True,
+                    "is_buy": True,
                 })
             if last_row['sell_amount'] > 0:
                 order_list.append({
                     "price": last_row['sell_price'],
                     "amount": last_row['sell_amount'],
                     "duration": 60 * 60,
-                    "isBuy": False,
+                    "is_buy": False,
                 })
             if len(order_list) > 0:
                 orders[symbol] = order_list
