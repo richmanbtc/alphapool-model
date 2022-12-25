@@ -29,28 +29,29 @@ RUN pip install --no-cache-dir \
     lightgbm==3.2.1 \
     schedule==1.1.0 \
     TA-Lib==0.4.21 \
-    "git+https://github.com/richmanbtc/alphapool.git@v0.0.7#egg=alphapool" \
+    "git+https://github.com/richmanbtc/alphapool.git@v0.1.5#egg=alphapool" \
     dataset==1.5.2 \
     psycopg2==2.9.3 \
     retry==0.9.2 \
     tensorflow \
     "git+https://github.com/richmanbtc/scikeras.git@feature/sample_weight" \
-    keras-tcn \
-    yfinance \
-    pytorch-tabnet \
-    quandl \
+    keras-tcn==3.5.0 \
+    yfinance==0.1.87 \
+    pytorch-tabnet==4.0 \
+    quandl==3.7.0 \
     faiss-cpu==1.7.2 \
-    pandas-market-calendars \
+    pandas-market-calendars==4.1.1 \
     xgboost==1.6.2 \
-    rgf_python \
-    dcor \
-    numba \
-    tardis-dev \
-    pandas_ta \
-    fastparquet \
-    'google-cloud-bigquery[bqstorage,pandas]' \
-    web3 \
-    catboost==1.1.1
+    rgf_python==3.12.0 \
+    dcor==0.5.7 \
+    tardis-dev==2.0.0a10 \
+    pandas_ta==0.3.14b0 \
+    fastparquet==2022.11.0 \
+    'google-cloud-bigquery[bqstorage,pandas]==3.4.0' \
+    web3==5.31.1 \
+    catboost==1.1.1 \
+    optuna==3.0.5 \
+    scipy==1.8.1
 
 
 RUN git clone --recursive http://github.com/ibayer/fastFM.git /tmp/fastFM \
