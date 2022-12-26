@@ -1,8 +1,8 @@
-FROM alphapool/alphapool-model:image-v0.0.2
+FROM alphapool/alphapool-model:image-v0.0.3
 
-RUN pip uninstall -y alphapool \
-    && pip install --no-cache-dir \
-      "git+https://github.com/richmanbtc/alphapool.git@v0.1.4#egg=alphapool"
+# RUN pip uninstall -y alphapool \
+#    && pip install --no-cache-dir \
+#      "git+https://github.com/richmanbtc/alphapool.git@v0.1.4#egg=alphapool"
 
 ADD . /app
 ENV ALPHAPOOL_MODEL_ID example-model-rank
