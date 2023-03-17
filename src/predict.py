@@ -7,6 +7,7 @@ import pandas_ta as ta # required to load models using df.ta.xxx
 import traceback
 import dataset
 from retry import retry
+import pandas_market_calendars as mcal
 from alphapool import Client
 from .logger import create_logger
 from .data_fetcher import DataFetcher
@@ -32,6 +33,9 @@ def predict_job(dry_run=False):
 
     exchange = model.exchange if hasattr(model, 'exchange') else None
     logger.info('exchange {}'.format(exchange))
+
+    mode = model.mode if hasattr(model, 'mode') else None
+    logger.info('mode {}'.format(mode))
 
     database_url = os.getenv("ALPHAPOOL_DATABASE_URL")
     db = dataset.connect(database_url)
@@ -91,6 +95,31 @@ def predict_job(dry_run=False):
                 ),
                 positions=(df_start * (1.0 - t) + df_end * t).to_dict(),
             )
+    elif mode == 'stock':
+        jpx = mcal.get_calendar('JPX')
+        start_date = (max_timestamp + pd.to_timedelta(1, unit='D'))
+        next_schedule = jpx.schedule(
+            start_date=start_date.strftime('%Y-%m-%d'),
+            end_date=(start_date + pd.to_timedelta(30, unit='D')).strftime('%Y-%m-%d'),
+        )
+        next_op_timestamp = int(next_schedule.index[0].timestamp())
+
+        df_last = df.loc[df.index.get_level_values('timestamp') == max_timestamp]
+
+        x = df_last.groupby("symbol")["position_op"].mean()
+        client.submit(
+            model_id=model_id,
+            exchange=exchange,
+            timestamp=next_op_timestamp,
+            positions=x.loc[x != 0].to_dict(),
+        )
+        x = df_last.groupby("symbol")["position_cl"].mean()
+        client.submit(
+            model_id=model_id,
+            exchange=exchange,
+            timestamp=next_op_timestamp + 6 * 60 * 60,
+            positions=x.loc[x != 0].to_dict(),
+        )
     else:
         orders = {}
 
