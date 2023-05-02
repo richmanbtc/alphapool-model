@@ -20,13 +20,13 @@ RUN cd /tmp \
 
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir \
-    ccxt==1.57.43 \
+    ccxt==1.57.1 \
     "git+https://github.com/richmanbtc/ccxt_rate_limiter.git@v0.0.4#egg=ccxt_rate_limiter" \
     "git+https://github.com/richmanbtc/crypto_data_fetcher.git@v0.0.17#egg=crypto_data_fetcher" \
     cloudpickle==2.0.0 \
     coverage==6.2 \
     cvxpy==1.1.18 \
-    lightgbm==3.2.1 \
+    lightgbm==3.3.5 \
     schedule==1.1.0 \
     TA-Lib==0.4.21 \
     "git+https://github.com/richmanbtc/alphapool.git@v0.1.5#egg=alphapool" \
@@ -53,6 +53,10 @@ RUN pip install --no-cache-dir \
     optuna==3.0.5 \
     scipy==1.8.1
 
+# Version resolution takes too long when installed with other pips
+RUN pip install --no-cache-dir \
+    mljar-supervised==0.11.5 \
+    autogluon==0.7.0
 
 RUN git clone --recursive http://github.com/ibayer/fastFM.git /tmp/fastFM \
     && (cd /tmp/fastFM \
