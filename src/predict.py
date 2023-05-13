@@ -49,6 +49,7 @@ def predict_job(dry_run=False):
         min_timestamp=int(max_timestamp - model.max_data_sec),
     )
     df = model.merge_data(dfs)
+    df = df.dropna() # to detect data source error. break compatibility
     max_timestamp = df.index.get_level_values("timestamp").max()
     logger.info('max_timestamp {}'.format(max_timestamp))
 
