@@ -52,7 +52,8 @@ RUN pip install --no-cache-dir \
     seaborn==0.12.2 \
     jupyterlab==4.0.2 \
     lightning==2.0.4 \
-    adabelief-pytorch==0.2.0
+    adabelief-pytorch==0.2.0 \
+    SQLAlchemy==1.4.45
 
 ADD . /app
 ENV ALPHAPOOL_MODEL_ID example-model-rank
