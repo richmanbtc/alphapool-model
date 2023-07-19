@@ -51,7 +51,8 @@ RUN pip install --no-cache-dir \
     web3==5.31.1 \
     catboost==1.1.1 \
     optuna==3.0.5 \
-    scipy==1.8.1
+    scipy==1.8.1 \
+    k-means-constrained==0.7.3
 
 # Version resolution takes too long when installed with other pips
 RUN pip install --no-cache-dir \
